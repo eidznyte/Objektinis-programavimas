@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <iomanip>
 #include <stdexcept>
+#include <limits>
+
 double calculateAverage(const std::vector<int>& grades) {
     double sum = 0;
     for (int grade : grades) {
@@ -24,27 +26,27 @@ double calculateMedian(std::vector<int> grades) {
     return size % 2 == 0 ? (grades[mid - 1] + grades[mid]) / 2.0 : grades[mid];
 }
 
-void readFromFile(std::vector<Student>& students) {
-    std::ifstream file("students.txt");
+void readFromFile(std::vector<Student>& students, const std::string& filename) {
+    std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Failed to open the file 'students.txt'\n";
+        std::cerr << "Failed to open the file '" << filename << "'\n";
         return;
     }
 
     std::string line;
-    std::getline(file, line);  
+    std::getline(file, line);
 
     while (std::getline(file, line)) {
         std::istringstream iss(line);
         Student student;
 
-        if (!(iss >> student.name >> student.surname)) { break; }  
+        if (!(iss >> student.name >> student.surname)) { break; }
 
         int score;
         while (iss >> score && student.homeworks.size() < line.size() - 2) {
             student.homeworks.push_back(score);
         }
-        student.exam = score;  
+        student.exam = score;
 
         student.finalScoreAvg = 0.4 * calculateAverage(student.homeworks) + 0.6 * student.exam;
         student.finalScoreMed = 0.4 * calculateMedian(student.homeworks) + 0.6 * student.exam;
@@ -54,6 +56,8 @@ void readFromFile(std::vector<Student>& students) {
 
     file.close();
 }
+
+
 
 
 void inputStudentsManually(std::vector<Student>& students) {
@@ -112,9 +116,8 @@ void inputStudentsManually(std::vector<Student>& students) {
             std::cin.ignore(); 
         }
 
-        
-        student.finalScoreAvg = calculateAverage(student.homeworks);
-        student.finalScoreMed = calculateMedian(student.homeworks);
+        student.finalScoreAvg = 0.4 * calculateAverage(student.homeworks) + 0.6 * student.exam;
+        student.finalScoreMed = 0.4 * calculateMedian(student.homeworks) + 0.6 * student.exam;
 
         students.push_back(student);
     }
@@ -165,8 +168,6 @@ void generateFile(const std::string& filename, int numStudents) {
     outFile.close();
 }
 
-
-
 void generateRandomScores(Student& student) {
     const int numHomeworks = rand() % 20 + 1; 
     for (int i = 0; i < numHomeworks; ++i) {
@@ -174,3 +175,39 @@ void generateRandomScores(Student& student) {
     }
     student.exam = rand() % 10 + 1;  
 }
+
+void categorizeStudents(const std::vector<Student>& students, std::vector<Student>& dummies, std::vector<Student>& smart) {
+    for (const Student& student : students) {
+        if (student.finalScoreAvg < 5.0) {
+            dummies.push_back(student);
+        }
+        else {
+            smart.push_back(student);
+        }
+    }
+}
+
+
+void writeToFile(const std::vector<Student>& students, const std::string& filename) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open the file '" << filename << "'\n";
+        return;
+    }
+
+    file << std::setw(15) << "Name"
+        << std::setw(15) << "Surname"
+        << std::setw(20) << "Final Score(Avg)"
+        << std::setw(20) << "Final Score(Med)" << std::endl;
+    file << std::string(70, '-') << std::endl;
+
+    for (const Student& student : students) {
+        file << std::setw(15) << student.name
+            << std::setw(15) << student.surname
+            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreAvg
+            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreMed << std::endl;
+    }
+
+    file.close();
+}
+
