@@ -7,6 +7,18 @@
 #include <iomanip>
 #include <stdexcept>
 #include <limits>
+#include <chrono>
+std::chrono::high_resolution_clock::time_point start;
+std::chrono::high_resolution_clock::time_point end;
+
+
+void displayDuration(const std::chrono::high_resolution_clock::time_point& start,
+    const std::chrono::high_resolution_clock::time_point& end,
+    const std::string& operationName)
+{
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << operationName << " took " << duration << " milliseconds." << std::endl;
+}
 
 double calculateAverage(const std::vector<int>& grades) {
     double sum = 0;
@@ -42,21 +54,20 @@ void readFromFile(std::vector<Student>& students, const std::string& filename) {
 
         if (!(iss >> student.name >> student.surname)) { break; }
 
-        int score;
-        while (iss >> score && student.homeworks.size() < line.size() - 2) {
-            student.homeworks.push_back(score);
+        for (int i = 0; i < 14; i++) { 
+            int score;
+            if (iss >> score) {
+                student.homeworks.push_back(score);
+            }
         }
-        student.exam = score;
-
-        student.finalScoreAvg = 0.4 * calculateAverage(student.homeworks) + 0.6 * student.exam;
-        student.finalScoreMed = 0.4 * calculateMedian(student.homeworks) + 0.6 * student.exam;
-
-        students.push_back(student);
+        if (iss >> student.exam) {
+            student.finalScoreAvg = 0.4 * calculateAverage(student.homeworks) + 0.6 * student.exam;
+            student.finalScoreMed = 0.4 * calculateMedian(student.homeworks) + 0.6 * student.exam;
+            students.push_back(student);
+        }
     }
-
     file.close();
 }
-
 
 
 
@@ -124,8 +135,6 @@ void inputStudentsManually(std::vector<Student>& students) {
 }
 
 
-
-
 void displayStudents(const std::vector<Student>& students) {
     std::cout << std::setw(15) << "Name"
         << std::setw(15) << "Surname"
@@ -177,6 +186,7 @@ void generateRandomScores(Student& student) {
 }
 
 void categorizeStudents(const std::vector<Student>& students, std::vector<Student>& dummies, std::vector<Student>& smart) {
+    start = std::chrono::high_resolution_clock::now();  
     for (const Student& student : students) {
         if (student.finalScoreAvg < 5.0) {
             dummies.push_back(student);
@@ -185,10 +195,13 @@ void categorizeStudents(const std::vector<Student>& students, std::vector<Studen
             smart.push_back(student);
         }
     }
+    end = std::chrono::high_resolution_clock::now();  
+    displayDuration(start, end, "Categorizing students");
 }
 
 
 void writeToFile(const std::vector<Student>& students, const std::string& filename) {
+    start = std::chrono::high_resolution_clock::now(); 
     std::ofstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Failed to open the file '" << filename << "'\n";
@@ -207,7 +220,9 @@ void writeToFile(const std::vector<Student>& students, const std::string& filena
             << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreAvg
             << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreMed << std::endl;
     }
-
+    end = std::chrono::high_resolution_clock::now();  
+    displayDuration(start, end, "Writing to file");
     file.close();
 }
+
 
