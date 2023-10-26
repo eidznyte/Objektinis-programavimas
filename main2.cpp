@@ -2,9 +2,16 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
+#include <vector>
+#include <list>
 
 int main() {
-    StudentsContainer students;
+    std::vector<Student> studentsVector;
+    std::list<Student> studentsList;
+    std::vector<Student> dummiesVector, smartVector;
+    std::list<Student> dummiesList, smartList;
+    std::chrono::time_point<std::chrono::high_resolution_clock> startVector, endVector, startList, endList;
+    std::chrono::duration<double> vectorDuration, listDuration;
     std::chrono::duration<double> readingDuration(0.0), sortingDuration(0.0), writingDuration(0.0);
 
     std::cout << "Would you like to: \n"
@@ -18,14 +25,14 @@ int main() {
     auto start = std::chrono::high_resolution_clock::now();
     switch (choice) {
     case 1:
-        inputStudentsManually(students);
+        inputStudentsManually(studentsVector);
         break;
     case 2:
     {
         std::cout << "Enter the filename to read from (including extension, e.g., 'data.txt'): ";
         std::string filename;
         std::cin >> filename;
-        readFromFile(students, filename);
+        readFromFile(studentsVector, filename);
         break;
     }
     case 3:
@@ -52,7 +59,7 @@ int main() {
         }
         std::string filename = "random_students_" + std::to_string(records) + ".txt";
         generateFile(filename, records);
-        readFromFile(students, filename);
+        readFromFile(studentsVector, filename);
         break;
     }
     default:
@@ -62,31 +69,33 @@ int main() {
     auto end = std::chrono::high_resolution_clock::now();
     readingDuration = end - start;
 
-    displayStudents(students);
+    displayStudents(studentsVector);
 
-    start = std::chrono::high_resolution_clock::now();
-    StudentsContainer dummies, smart;
-    categorizeStudents(students, dummies, smart);
-    end = std::chrono::high_resolution_clock::now();
-    sortingDuration = end - start;
+    startVector = std::chrono::high_resolution_clock::now();
+    categorizeStudents(studentsVector, dummiesVector, smartVector);
+    writeToFile(dummiesVector, "dummies_vector.txt");
+    writeToFile(smartVector, "smart_vector.txt");
+    endVector = std::chrono::high_resolution_clock::now();
+    vectorDuration = endVector - startVector;
 
-    std::cout << "\nDummies:\n";
-    displayStudents(dummies);
-    std::cout << "\nSmart:\n";
-    displayStudents(smart);
+    
+    studentsList.assign(studentsVector.begin(), studentsVector.end());
 
-    start = std::chrono::high_resolution_clock::now();
-    writeToFile(dummies, "dummies.txt");
-    writeToFile(smart, "smart.txt");
-    end = std::chrono::high_resolution_clock::now();
-    writingDuration = end - start;
+  
+    startList = std::chrono::high_resolution_clock::now();
+    categorizeStudents(studentsList, dummiesList, smartList);
+    writeToFile(dummiesList, "dummies_list.txt");
+    writeToFile(smartList, "smart_list.txt");
+    endList = std::chrono::high_resolution_clock::now();
+    listDuration = endList - startList;
 
-    std::cout << "Students have been categorized and written to 'dummies.txt' and 'smart.txt' respectively." << std::endl;
+    std::cout << "\nTime taken using std::vector: " << vectorDuration.count() << " seconds." << std::endl;
+    std::cout << "Time taken using std::list: " << listDuration.count() << " seconds." << std::endl;
+
+    std::cout << "\nStudents have been categorized and written to 'dummies_vector.txt' and 'smart_vector.txt' respectively." << std::endl;
 
     std::cout << std::fixed << std::setprecision(6);
     std::cout << "\nTime taken for reading data: " << readingDuration.count() << " seconds." << std::endl;
-    std::cout << "Time taken for sorting students: " << sortingDuration.count() << " seconds." << std::endl;
-    std::cout << "Time taken for writing to files: " << writingDuration.count() << " seconds." << std::endl;
 
     return 0;
 }
