@@ -13,15 +13,20 @@ struct Student {
     double finalScoreAvg = 0;
     double finalScoreMed = 0;
 };
-void inputStudentsManually(StudentsContainer& students);
-void displayStudents(const StudentsContainer& students);
+
+void inputStudentsManually(std::vector<Student>& students);
+void displayStudents(const std::vector<Student>& students);
 void generateFile(const std::string& filename, int numStudents);
 void generateRandomScores(Student& student);
-void categorizeStudents(const StudentsContainer& students, StudentsContainer& dummies, StudentsContainer& smart);
-void writeToFile(const StudentsContainer& students, const std::string& filename);
-void readFromFile(StudentsContainer& students, const std::string& filename);
+void writeToFile(const std::vector<Student>& students, const std::string& filename);
+void readFromFile(std::vector<Student>& students, const std::string& filename);
+void inputStudentsManually(std::list<Student>& students);
+void displayStudents(const std::list<Student>& students);
+void categorizeStudents(const std::vector<Student>& students, std::vector<Student>& dummies, std::vector<Student>& smart);
+void categorizeStudents(const std::list<Student>& students, std::list<Student>& dummies, std::list<Student>& smart);
+void writeToFile(const std::list<Student>& students, const std::string& filename);
+void readFromFile(std::list<Student>& students, const std::string& filename);
 double calculateAverage(const std::vector<int>& grades);
 double calculateMedian(std::vector<int> grades);
 
 #endif // STUDENTS2_H
-
