@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <limits>
 #include <chrono>
+#include <list>
 std::chrono::high_resolution_clock::time_point start;
 std::chrono::high_resolution_clock::time_point end;
 
@@ -69,7 +70,36 @@ void readFromFile(std::vector<Student>& students, const std::string& filename) {
     file.close();
 }
 
+void readFromFile(std::list<Student>& students, const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open the file '" << filename << "'\n";
+        return;
+    }
 
+    std::string line;
+    std::getline(file, line);
+
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        Student student;
+
+        if (!(iss >> student.name >> student.surname)) { break; }
+
+        for (int i = 0; i < 14; i++) {
+            int score;
+            if (iss >> score) {
+                student.homeworks.push_back(score);
+            }
+        }
+        if (iss >> student.exam) {
+            student.finalScoreAvg = 0.4 * calculateAverage(student.homeworks) + 0.6 * student.exam;
+            student.finalScoreMed = 0.4 * calculateMedian(student.homeworks) + 0.6 * student.exam;
+            students.push_back(student);
+        }
+    }
+    file.close();
+}
 
 void inputStudentsManually(std::vector<Student>& students) {
     std::cout << "Enter the number of students: ";
@@ -134,100 +164,7 @@ void inputStudentsManually(std::vector<Student>& students) {
     }
 }
 
-
-void displayStudents(const std::vector<Student>& students) {
-    std::cout << std::setw(15) << "Name"
-        << std::setw(15) << "Surname"
-        << std::setw(20) << "Final Score(Avg)"
-        << std::setw(20) << "Final Score(Med)" << std::endl;
-    std::cout << std::string(70, '-') << std::endl;
-
-    for (const Student& student : students) {
-        std::cout << std::setw(15) << student.name
-            << std::setw(15) << student.surname
-            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreAvg
-            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreMed << std::endl;
-    }
-}
-
-void generateFile(const std::string& filename, int numStudents) {
-    std::ofstream outFile(filename);
-    if (!outFile) {
-        std::cerr << "Failed to create file: " << filename << std::endl;
-        return;
-    }
-
-
-    outFile << std::setw(15) << "Vardas"
-        << std::setw(15) << "Pavarde"
-        << std::setw(25) << "ND scores"
-        << std::setw(30) << "Egz." << std::endl;
-
-    for (int i = 1; i <= numStudents; i++) {
-        outFile << std::setw(15) << ("Vardas" + std::to_string(i))
-            << std::setw(15) << ("Pavarde" + std::to_string(i));
-
-        for (int j = 0; j < 14; j++) {
-            outFile << std::setw(3) << (rand() % 10 + 1);
-        }
-
-        outFile << std::setw(10) << (rand() % 10 + 1) << std::endl;
-    }
-
-    outFile.close();
-}
-
-void generateRandomScores(Student& student) {
-    const int numHomeworks = rand() % 20 + 1;
-    for (int i = 0; i < numHomeworks; ++i) {
-        student.homeworks.push_back(rand() % 10 + 1);
-    }
-    student.exam = rand() % 10 + 1;
-}
-
-void categorizeStudents(const std::vector<Student>& students, std::vector<Student>& dummies, std::vector<Student>& smart) {
-    start = std::chrono::high_resolution_clock::now();
-    for (const Student& student : students) {
-        if (student.finalScoreAvg < 5.0) {
-            dummies.push_back(student);
-        }
-        else {
-            smart.push_back(student);
-        }
-    }
-    end = std::chrono::high_resolution_clock::now();
-    displayDuration(start, end, "Categorizing students");
-}
-
-
-void writeToFile(const std::vector<Student>& students, const std::string& filename) {
-    start = std::chrono::high_resolution_clock::now();
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open the file '" << filename << "'\n";
-        return;
-    }
-
-    file << std::setw(15) << "Name"
-        << std::setw(15) << "Surname"
-        << std::setw(20) << "Final Score(Avg)"
-        << std::setw(20) << "Final Score(Med)" << std::endl;
-    file << std::string(70, '-') << std::endl;
-
-    for (const Student& student : students) {
-        file << std::setw(15) << student.name
-            << std::setw(15) << student.surname
-            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreAvg
-            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreMed << std::endl;
-    }
-    end = std::chrono::high_resolution_clock::now();
-    displayDuration(start, end, "Writing to file");
-    file.close();
-}
-
-
-
-void inputStudentsManually(std::vector<Student>& students) {
+void inputStudentsManually(std::list<Student>& students) {
     std::cout << "Enter the number of students: ";
     int numStudents;
     while (!(std::cin >> numStudents) || numStudents <= 0) {
@@ -287,11 +224,26 @@ void inputStudentsManually(std::vector<Student>& students) {
         student.finalScoreMed = 0.4 * calculateMedian(student.homeworks) + 0.6 * student.exam;
 
         students.push_back(student);
+
     }
 }
 
-
 void displayStudents(const std::vector<Student>& students) {
+    std::cout << std::setw(15) << "Name"
+        << std::setw(15) << "Surname"
+        << std::setw(20) << "Final Score(Avg)"
+        << std::setw(20) << "Final Score(Med)" << std::endl;
+    std::cout << std::string(70, '-') << std::endl;
+
+    for (const Student& student : students) {
+        std::cout << std::setw(15) << student.name
+            << std::setw(15) << student.surname
+            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreAvg
+            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreMed << std::endl;
+    }
+}
+
+void displayStudents(const std::list<Student>& students) {
     std::cout << std::setw(15) << "Name"
         << std::setw(15) << "Surname"
         << std::setw(20) << "Final Score(Avg)"
@@ -342,7 +294,7 @@ void generateRandomScores(Student& student) {
 }
 
 void categorizeStudents(const std::vector<Student>& students, std::vector<Student>& dummies, std::vector<Student>& smart) {
-    start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     for (const Student& student : students) {
         if (student.finalScoreAvg < 5.0) {
             dummies.push_back(student);
@@ -351,10 +303,23 @@ void categorizeStudents(const std::vector<Student>& students, std::vector<Studen
             smart.push_back(student);
         }
     }
-    end = std::chrono::high_resolution_clock::now();
-    displayDuration(start, end, "Categorizing students");
+    auto end = std::chrono::high_resolution_clock::now();
+    displayDuration(start, end, "Categorizing students with vectors");
 }
 
+void categorizeStudents(const std::list<Student>& students, std::list<Student>& dummies, std::list<Student>& smart) {
+    auto start = std::chrono::high_resolution_clock::now();
+    for (const Student& student : students) {
+        if (student.finalScoreAvg < 5.0) {
+            dummies.push_back(student);
+        }
+        else {
+            smart.push_back(student);
+        }
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    displayDuration(start, end, "Categorizing students with lists");
+}
 
 void writeToFile(const std::vector<Student>& students, const std::string& filename) {
     start = std::chrono::high_resolution_clock::now();
@@ -381,3 +346,27 @@ void writeToFile(const std::vector<Student>& students, const std::string& filena
     file.close();
 }
 
+void writeToFile(const std::list<Student>& students, const std::string& filename) {
+    start = std::chrono::high_resolution_clock::now();
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open the file '" << filename << "'\n";
+        return;
+    }
+
+    file << std::setw(15) << "Name"
+        << std::setw(15) << "Surname"
+        << std::setw(20) << "Final Score(Avg)"
+        << std::setw(20) << "Final Score(Med)" << std::endl;
+    file << std::string(70, '-') << std::endl;
+
+    for (const Student& student : students) {
+        file << std::setw(15) << student.name
+            << std::setw(15) << student.surname
+            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreAvg
+            << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreMed << std::endl;
+    }
+    end = std::chrono::high_resolution_clock::now();
+    displayDuration(start, end, "Writing to file");
+    file.close();
+}
