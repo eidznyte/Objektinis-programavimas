@@ -13,11 +13,6 @@ struct Student {
     double finalScoreAvg = 0;
     double finalScoreMed = 0;
 };
-
-// Choose a container type. Uncomment one line based on what you want to test.
- using StudentsContainer = std::vector<Student>;
- //using StudentsContainer = std::list<Student>;
-
 void inputStudentsManually(StudentsContainer& students);
 void displayStudents(const StudentsContainer& students);
 void generateFile(const std::string& filename, int numStudents);
