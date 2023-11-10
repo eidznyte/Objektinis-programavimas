@@ -295,43 +295,37 @@ void generateRandomScores(Student& student) {
 
 void categorizeStudents(std::vector<Student>& students, std::vector<Student>& dummies) {
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<Student> tempSmart;
 
-    for (const Student& student : students) {
-        if (student.finalScoreAvg < 5.0) {
-            dummies.push_back(student);
+    for (auto it = students.begin(); it != students.end();) {
+        if (it->finalScoreAvg < 5.0) {
+            dummies.push_back(*it);
+            it = students.erase(it); 
         }
         else {
-            tempSmart.push_back(student);
+            ++it; 
         }
     }
-
-    students = tempSmart; // Update the students vector to only have smart students
 
     auto end = std::chrono::high_resolution_clock::now();
     displayDuration(start, end, "Categorizing students with vectors");
 }
 
-
 void categorizeStudents(std::list<Student>& students, std::list<Student>& dummies) {
     auto start = std::chrono::high_resolution_clock::now();
-    std::list<Student> tempSmart;
 
-    for (const Student& student : students) {
-        if (student.finalScoreAvg < 5.0) {
-            dummies.push_back(student);
+    for (auto it = students.begin(); it != students.end();) {
+        if (it->finalScoreAvg < 5.0) {
+            dummies.push_back(*it);
+            it = students.erase(it);
         }
         else {
-            tempSmart.push_back(student);
+            ++it;
         }
     }
-
-    students = tempSmart; // Update the students list to only have smart students
 
     auto end = std::chrono::high_resolution_clock::now();
     displayDuration(start, end, "Categorizing students with lists");
 }
-
 
 void writeToFile(const std::vector<Student>& students, const std::string& filename) {
     start = std::chrono::high_resolution_clock::now();
@@ -359,8 +353,9 @@ void writeToFile(const std::vector<Student>& students, const std::string& filena
 }
 
 void writeToFile(const std::list<Student>& students, const std::string& filename) {
-    start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     std::ofstream file(filename);
+
     if (!file.is_open()) {
         std::cerr << "Failed to open the file '" << filename << "'\n";
         return;
@@ -372,14 +367,24 @@ void writeToFile(const std::list<Student>& students, const std::string& filename
         << std::setw(20) << "Final Score(Med)" << std::endl;
     file << std::string(70, '-') << std::endl;
 
+    if (students.empty()) {
+        std::cerr << "No students data to write.\n";
+        file.close();
+        return;
+    }
+
     for (const Student& student : students) {
+        if (file.fail()) {
+            std::cerr << "Failed to write data to the file.\n";
+            break;
+        }
         file << std::setw(15) << student.name
             << std::setw(15) << student.surname
             << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreAvg
             << std::setw(20) << std::fixed << std::setprecision(2) << student.finalScoreMed << std::endl;
     }
-    end = std::chrono::high_resolution_clock::now();
+
+    auto end = std::chrono::high_resolution_clock::now();
     displayDuration(start, end, "Writing to file");
     file.close();
 }
-
