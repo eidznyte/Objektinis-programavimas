@@ -310,6 +310,24 @@ void categorizeStudents(std::vector<Student>& students, std::vector<Student>& du
     displayDuration(start, end, "Categorizing students with vectors");
 }
 
+void categorizeStudentsremove(std::vector<Student>& students, std::vector<Student>& dummies) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    auto newEnd = std::remove_if(students.begin(), students.end(),
+        [&dummies](const Student& student) {
+            bool isDummie = student.finalScoreAvg < 5.0;
+            if (isDummie) {
+                dummies.push_back(student);
+            }
+            return isDummie;
+        });
+    students.erase(newEnd, students.end());
+
+    auto end = std::chrono::high_resolution_clock::now();
+    displayDuration(start, end, "Categorizing students with remove_if");
+}
+
+
 void categorizeStudents(std::list<Student>& students, std::list<Student>& dummies) {
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -326,6 +344,8 @@ void categorizeStudents(std::list<Student>& students, std::list<Student>& dummie
     auto end = std::chrono::high_resolution_clock::now();
     displayDuration(start, end, "Categorizing students with lists");
 }
+
+
 
 void writeToFile(const std::vector<Student>& students, const std::string& filename) {
     start = std::chrono::high_resolution_clock::now();
