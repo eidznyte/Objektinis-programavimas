@@ -74,6 +74,13 @@ int main() {
     writeToFile(studentsVector, "smart_vector.txt");
     endVector = std::chrono::high_resolution_clock::now();
     vectorDuration = std::chrono::duration_cast<std::chrono::seconds>(endVector - startVector);
+
+    startVector = std::chrono::high_resolution_clock::now();
+    categorizeStudentsremove(studentsVector, dummiesVector);
+    writeToFile(dummiesVector, "dummies_vector.txt");
+    writeToFile(studentsVector, "smart_vector.txt");
+    endVector = std::chrono::high_resolution_clock::now();
+    vectorDuration = std::chrono::duration_cast<std::chrono::seconds>(endVector - startVector);
     
     startList = std::chrono::high_resolution_clock::now();
     categorizeStudents(studentsList, dummiesList);
@@ -84,7 +91,6 @@ int main() {
 
     std::cout << "\nTime taken using std::vector: " << vectorDuration.count() << " seconds." << std::endl;
     std::cout << "Time taken using std::list: " << listDuration.count() << " seconds." << std::endl;
-   // std::cout << "\nStudents have been categorized and written to 'dummies_vector.txt' and 'dummies_list.txt' respectively." << std::endl;
     std::cout << std::fixed << std::setprecision(6);
     std::cout << "\nTime taken for reading data: " << readingDuration.count() << " seconds." << std::endl;
 
