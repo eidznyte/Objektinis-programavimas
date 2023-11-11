@@ -24,6 +24,7 @@ void inputStudentsManually(std::list<Student>& students);
 void displayStudents(const std::list<Student>& students);
 void categorizeStudents(std::vector<Student>& students, std::vector<Student>& dummies);
 void categorizeStudents(std::list<Student>& students, std::list<Student>& dummies);
+void categorizeStudentsremove(std::vector<Student>& students, std::vector<Student>& dummies);
 void writeToFile(const std::list<Student>& students, const std::string& filename);
 void readFromFile(std::list<Student>& students, const std::string& filename);
 double calculateAverage(const std::vector<int>& grades);
